@@ -124,7 +124,7 @@ def Test(file1,z,q):
       elif phase1[i].count("[")>=1:
         c=[]
         b=[]
-        if phase1[i][0]=="[" and phase1[i][-1]=="]" and phase1[i].count("[")==1:
+        if phase1[i][0]=="[" and phase1[i][-1]=="]" and phase1[i].count("[")==1:#for specific situations like [1,5]
           content=phase1[i].replace("[","").replace("]","")
           fliC_combine.append(content)
           fliC_combine.append("-")
@@ -186,6 +186,16 @@ def Test(file1,z,q):
       star="*"#
       star_line="Additional characterization is necessary to assign a serotype to this strain.  Commonly circulating strains of serotype Enteritidis are sdf+, although sdf- strains of serotype Enteritidis are known to exist. Serotype Gallinarum is typically sdf- but should be quite rare. Sdf- strains of serotype Enteritidis and serotype Gallinarum can be differentiated by phenotypic profile or genetic criteria.\n"##
       predict_sero="See comments below"#
+  elif predict_form=="4:i:-":#03252016#
+    predict_sero="potential monophasic variant of Typhimurium"#03252016#
+  elif predict_form=="4:r:-":#03252016#
+    predict_sero="potential monophasic variant of Heidelberg"#03252016# 
+  elif predict_form=="4:b:-":#03252016#
+    predict_sero="potential monophasic variant of Paratyphi B"#03252016# 
+  elif predict_form=="8:e,h:1,2":#03282016#
+    predict_sero="Newport"#03282016#
+    star="*"##03282016#
+    star_line="Serotype Bardo shares the same antigenic profile with Newport, but Bardo is exceedingly rare."#03282016#
   claim="The serotype(s) is/are the only serotype(s) with the indicated antigenic profile currently recognized in the Kauffmann White Scheme.  New serotypes can emerge and the possibility exists that this antigenic profile may emerge in a different subspecies.  Identification of strains to the subspecies level should accompany serotype determination; the same antigenic profile in different subspecies is considered different serotypes."##
   if "N/A" in predict_sero:###added after standalone version, 2015/2/3
     claim=""###added after standalone version, 2015/2/3  
@@ -194,8 +204,8 @@ def Test(file1,z,q):
   new_file.write(file2+"\t"+"O-"+Otype+"\t"+fliC+"\t"+fljB+"\t"+Otype+":"+fliC+":"+fljB+"\t"+(" or ").join(seronames)+"\t"+answer+"\t"+suspect+"\n")
   new_file.close()
   '''
-  if predict_sero=="Typhimurium" and oafA=="-":#$$$$
-    predict_sero="Typhimurium_O5-"
+  if "Typhimurium" in predict_sero and oafA=="-":#$$$$#03252016#
+    predict_sero=predict_sero.strip()+"(O5-)"#03252016#
     star="*"#
     star_line="Detected the deletion of O5-."
   new_file=open("Seqsero_result.txt","w")

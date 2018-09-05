@@ -26,10 +26,13 @@ def BWA_O_analysis(sra_name,additional_file,database,mapping_mode,file_mode):
       except:
         pass
       dirpath = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
-      os.system("perl "+dirpath+"/split_interleaved_fastq.pl --input "+core_id+".fastq --output "+core_id+".fastq")    
-      for_fq=core_id+"-read1.fastq"
-      rev_fq=core_id+"-read2.fastq"
-      if os.path.getsize(for_fq)<=15000:#09092015
+      os.system("perl "+dirpath+"/split_interleaved_fastq.pl --input "+core_id+".fastq --output "+core_id.replace(".","_")+".fastq")#######03152016
+      ori_size=os.path.getsize(core_id+".fastq")#######03152016
+      os.system("mv "+core_id.replace(".","_")+"-read1.fastq"+" "+core_id+"-read1.fastq")#######03152016
+      os.system("mv "+core_id.replace(".","_")+"-read2.fastq"+" "+core_id+"-read2.fastq")#######03152016
+      for_fq=core_id+"-read1.fastq"#######03152016
+      rev_fq=core_id+"-read2.fastq"#######03152016
+      if float(os.path.getsize(for_fq))/ori_size<=0.1 or float(os.path.getsize(rev_fq))/ori_size<=0.1:#09092015#12292015#######03152016
         os.system("echo haha")#09092015
         os.system("perl "+dirpath+"/splitPairedEndReads.pl "+core_id+".fastq")#09092015
         os.system("mv "+core_id+".fastq_1 "+for_fq)##09092015
@@ -55,6 +58,9 @@ def BWA_O_analysis(sra_name,additional_file,database,mapping_mode,file_mode):
     re_core_id=reverse_seq.split(".fastq")[0]
     for_fq=for_core_id+".fastq"
     rev_fq=re_core_id+".fastq"
+    dirpath = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))#######03152016
+    print "check fastq id and make them in accordance with each other...please wait..."
+    os.system("python "+dirpath+"/compare_and_change_two_fastq_id.py "+for_fq+" "+rev_fq)#######03152016
     for_sai=for_core_id+".sai"
     rev_sai=re_core_id+".sai"
     sam=for_core_id+".sam"
@@ -87,12 +93,16 @@ def BWA_O_analysis(sra_name,additional_file,database,mapping_mode,file_mode):
       os.system("bwa sampe "+database+" "+for_sai+" "+ rev_sai+" "+for_fq+" "+rev_fq+" > "+sam)
     elif mapping_mode=="mem":
       os.system("bwa mem "+database+" "+for_fq+" "+rev_fq+" > "+sam) #2014/12/23
+    elif mapping_mode=="nanopore": ##
+      os.system("bwa mem -x ont2d "+database+" "+for_fq+" "+rev_fq+" > "+sam)##
   else:
     if mapping_mode=="mem":
       os.system("bwa mem "+database+" "+for_fq+" > "+sam) #2014/12/23
     elif mapping_mode=="sam":
       os.system("bwa aln "+database+" "+for_fq+" > "+for_sai)
       os.system("bwa samse "+database+" "+for_sai+" "+for_fq+" > "+sam)
+    elif mapping_mode=="nanopore":##
+      os.system("bwa mem -x ont2d "+database+" "+for_fq+" > "+sam)##
   os.system("samtools view -F 4 -Sbh "+sam+" > "+bam)
   os.system("samtools view -h -o "+sam+" "+bam)
 
@@ -144,6 +154,7 @@ def BWA_O_analysis(sra_name,additional_file,database,mapping_mode,file_mode):
         if "sdf" in x[0] and x[1]>3:#
           qq=0#
           print "$$$",x[0],"got a hit, reads:",x[1]#
+          final_O.remove(x)
       if qq!=0:#
         print "$$$No sdf exists"#
 
@@ -188,6 +199,8 @@ def assembly(sra_name,potential_choice,for_fq,rev_fq,for_sai,rev_sai,sam,bam,map
     elif mapping_mode=="sam":
       os.system("bwa aln database/"+database+" "+for_fq+" > "+for_sai)
       os.system("bwa samse database/"+database+" "+for_sai+" "+for_fq+" > "+sam)
+    elif mapping_mode=="nanopore":##
+      os.system("bwa mem -x ont2d database/"+database+" "+for_fq+" > "+sam)##
   else:
     if mapping_mode=="mem":
       os.system("bwa mem database/"+database+" "+for_fq+" "+rev_fq+" > "+sam) #2014/12/23
@@ -195,6 +208,8 @@ def assembly(sra_name,potential_choice,for_fq,rev_fq,for_sai,rev_sai,sam,bam,map
       os.system("bwa aln database/"+database+" "+for_fq+" > "+for_sai)
       os.system("bwa aln database/"+database+" "+rev_fq+" > "+rev_sai)
       os.system("bwa sampe database/"+database+" "+for_sai+" "+ rev_sai+" "+for_fq+" "+rev_fq+" > "+sam)
+    elif mapping_mode=="nanopore":
+      os.system("bwa mem -x ont2d database/"+database+" "+for_fq+" "+rev_fq+" > "+sam)
   os.system("samtools view -F 4 -Sbh "+sam+" > "+bam)
   os.system("samtools view -h -o "+sam+" "+bam)
   os.system("cat "+sam+"|awk '{if ($5>0) {print $10}}'>"+sam+"_seq.txt")

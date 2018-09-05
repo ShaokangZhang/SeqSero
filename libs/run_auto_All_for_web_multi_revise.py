@@ -134,7 +134,7 @@ def Test(file1,additional_file,file_mode,mapping_mode,z,q):
       elif phase1[i].count("[")>=1:
         c=[]
         b=[]
-        if phase1[i][0]=="[" and phase1[i][-1]=="]" and phase1[i].count("[")==1:
+        if phase1[i][0]=="[" and phase1[i][-1]=="]" and phase1[i].count("[")==1:#for specific situations like [1,5]
           content=phase1[i].replace("[","").replace("]","")
           fliC_combine.append(content)
           fliC_combine.append("-")
@@ -196,6 +196,16 @@ def Test(file1,additional_file,file_mode,mapping_mode,z,q):
       star="*"#
       star_line="Additional characterization is necessary to assign a serotype to this strain.  Commonly circulating strains of serotype Enteritidis are sdf+, although sdf- strains of serotype Enteritidis are known to exist. Serotype Gallinarum is typically sdf- but should be quite rare. Sdf- strains of serotype Enteritidis and serotype Gallinarum can be differentiated by phenotypic profile or genetic criteria.\n"#+##
       predict_sero="See comments below"#
+  elif predict_form=="4:i:-":#03252016#
+    predict_sero="potential monophasic variant of Typhimurium"#03252016#
+  elif predict_form=="4:r:-":#03252016#
+    predict_sero="potential monophasic variant of Heidelberg"#03252016# 
+  elif predict_form=="4:b:-":#03252016#
+    predict_sero="potential monophasic variant of Paratyphi B"#03252016#
+  elif predict_form=="8:e,h:1,2":#03282016#
+    predict_sero="Newport"#03282016#
+    star="*"##03282016#
+    star_line="Serotype Bardo shares the same antigenic profile with Newport, but Bardo is exceedingly rare."#03282016#
   claim="The serotype(s) is/are the only serotype(s) with the indicated antigenic profile currently recognized in the Kauffmann White Scheme.  New serotypes can emerge and the possibility exists that this antigenic profile may emerge in a different subspecies.  Identification of strains to the subspecies level should accompany serotype determination; the same antigenic profile in different subspecies is considered different serotypes."##
   if "N/A" in predict_sero:###added after standalone version, 2015/2/3
     claim=""###added after standalone version, 2015/2/3
@@ -204,7 +214,7 @@ def Test(file1,additional_file,file_mode,mapping_mode,z,q):
   new_file.write(file2+"\t"+"O-"+Otype+"\t"+fliC+"\t"+fljB+"\t"+Otype+":"+fliC+":"+fljB+"\t"+(" or ").join(seronames)+"\t"+answer+"\t"+suspect+"\n")
   new_file.close()
   '''
-  if predict_sero=="Typhimurium" or predict_form=="4:i:-":
+  if "Typhimurium" in predict_sero or predict_form=="4:i:-":#03252016#
     if file_mode=="1":
       os.system('python '+dirpath+'/deletion_compare.py '+real_file+' oafA '+mapping_mode+' 1 >temp_result_'+str(q)+'Typhim.txt')###02/06/2015
     if file_mode=="2":
@@ -216,16 +226,16 @@ def Test(file1,additional_file,file_mode,mapping_mode,z,q):
     handle=handle.readlines()
     for line in handle:
       if "$$$Typhimurium_O5-" in line:
-        predict_sero="Typhimurium_O5-"
+        predict_sero=predict_sero.strip()+"(O5-)"#03252016#
         star="*"#
         star_line="Detected the deletion of O5-."
   new_file=open("Seqsero_result.txt","w")
-  new_file.write("Input files:\t"+thename+"\n"+"O antigen prediction:\t"+"O-"+Otype+"\n"+"H1 antigen prediction(fliC):\t"+fliC+"\n"+"H2 antigen prediction(fljB):\t"+fljB+"\n"+"Predicted antigenic profile:\t"+predict_form+"\n"+"Predicted serotype(s):\t"+predict_sero+star+"\n"+star+star_line+claim+"\n")#+##
+  new_file.write("Input files:\t"+thename+" "+additional_file+"\n"+"O antigen prediction:\t"+"O-"+Otype+"\n"+"H1 antigen prediction(fliC):\t"+fliC+"\n"+"H2 antigen prediction(fljB):\t"+fljB+"\n"+"Predicted antigenic profile:\t"+predict_form+"\n"+"Predicted serotype(s):\t"+predict_sero+star+"\n"+star+star_line+claim+"\n")#+##
   new_file.close()
   os.system("rm temp_result_"+str(q)+"*.txt")###01/28/2015
   os.system("rm result.txt")###01/28/2015
   os.system("rm -rf database")###01/28/2015
-  os.system("rm *.fq *.fastq *.sam *.bam *.sai")###02/07/2015
+  os.system("rm -f *.fq *.fastq *.sam *.bam *.sai *.sra")###02/07/2015
   #os.system("rm "+for_fq)###01/28/2015
   #os.system("rm "+rev_fq)###01/28/2015
   #os.system("rm "+for_sai)
